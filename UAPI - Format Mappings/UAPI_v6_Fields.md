@@ -354,11 +354,3 @@ Root schema: `SystemAnnotations`.
 | UAPI field | Req | Applies when | Type / constraints | BT per docs | Description (API docs 2026-06-01) |
 | --- | --- | --- | --- | --- | --- |
 | `peppol_id` | O |  | string, pattern=`^[0-9]{4}:[a-zA-Z0-9._/, -]{1,59}$`, minLength=6, maxLength=64 | BT-49 | PEPPOL Network Identifier. [DE] of the recipient (BT-49 Buyer electronic address). |
-
-## Verification Log
-
-| Check | Result | Date |
-| --- | --- | --- |
-| Field list generated mechanically from `definition.yaml` at commit `cd19ec8` (all `$ref`, `allOf` and discriminator `oneOf` resolved; fiscalization limited to DE/BE/IT) | done | 2026-11-03 |
-| v5 ↔ v6 path diff against the 2026-06-01 OAS | done; differences listed per section | 2026-11-03 |
-| "BT per docs" values checked against EN 16931 | not checked here; done row by row on the format pages | — |

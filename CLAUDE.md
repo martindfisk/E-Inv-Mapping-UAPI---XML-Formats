@@ -24,7 +24,7 @@ If the meta commit changes, regenerate `UAPI - Format Mappings/UAPI_v6_Fields.md
 ## Page conventions
 
 - **Purpose:** the pages show engineering the mapping fiskaly must legally and normatively have. The UAPI cell names the field whose meaning really is the BT; today's behaviour stays in the notes.
-- **Structure:** short intro → 1. Invoice mapping (1.1 Header and references, 1.2 Buyer, 1.3 Lines, 1.4 Payment, 1.5 VAT breakdown and totals, 1.6 Calculated fields) → 2. Supplier data (taxpayer, system) → 3. Correction → 4. Fixed and derived values → 5. NEW fields index and other gaps → 6. Common validation failures → Sources → Verification Log. `UAPI - Format Mappings/XRechnung_3.md` is the reference page. The BIS 4 page adds 7. Changes 2017 → 2026 and implementation gaps.
+- **Structure:** short intro → 1. Invoice mapping (1.1 Header and references, 1.2 Buyer, 1.3 Lines, 1.4 Payment, 1.5 VAT breakdown and totals, 1.6 Calculated fields) → 2. Supplier data (taxpayer, system) → 3. Correction → 4. Fixed and derived values → 5. NEW fields index and other gaps → 6. Common validation failures → Sources. `UAPI - Format Mappings/XRechnung_3.md` is the reference page. The BIS 4 page adds 7. Changes 2017 → 2026 and implementation gaps.
 - **Intro:** at most two short paragraphs before §1. The first names the format and version, says in one sentence which UAPI settings select the flow, and names the spec artefact behind the XPath column. The second is the code-citation legend. No API endpoint list, routing table, workflow table or output summary: the mapping comes first.
 - **Mapping table columns:** `UAPI | EN 16931 BT | <format element> | notes`.
   - **UAPI:** paths are relative to `content.operation` as in `UAPI_v6_Fields.md`. Use `-` only for values that are fixed or derived by design. When the BT needs an input UAPI does not have, or the existing field means something else, write `NEW field needed: `<path>`` with today's source in brackets, e.g. `NEW field needed: `document.invoice_currency` (`payments[0].details.currency`)`. The same BT uses the same NEW path on every page. The notes of a NEW row start with `law (<article>)`, `format-mandatory (<rule>)`, `conditional (<rule>)` or `optional`.
@@ -34,7 +34,7 @@ If the meta commit changes, regenerate `UAPI - Format Mappings/UAPI_v6_Fields.md
   - **Format element:** a full XPath with namespace prefixes (`cbc:`/`cac:` for UBL, `ram:`/`rsm:` for CII). FatturaPA uses the field ID plus path, e.g. `2.1.1.4 DatiGeneraliDocumento/Numero`.
 - **Notes vocabulary:** `ignored`, `fixed`, `default`, `derived`, `gap`, `UNVERIFIED` (defined in `README.md`). Notes name the as-built behaviour and cite `file:line` in the fiskaly or Invopop code when they say something non-obvious. A direct mapping needs no tag. Do not invent tags such as "Verbatim" or "compared only"; say it in plain words.
 - Spec mapping and as-built behaviour are kept apart. The XPath column always holds the spec target. A deviation goes in the notes column; it never replaces the target.
-- No conversational text in the pages. Every page starts with a heading and an "As of YYYY-MM-DD" line and ends with a Verification Log.
+- No conversational text in the pages. Every page starts with a heading and an "As of YYYY-MM-DD" line. Pages carry no verification or validation log; claims that could not be confirmed are marked `UNVERIFIED` in the row.
 
 ## Traps specific to this project
 
