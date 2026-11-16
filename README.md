@@ -1,6 +1,6 @@
 # UAPI v6 → E-Invoice XML Format Mappings
 
-As of 2026-11-04.
+As of 2026-11-16.
 
 These pages show how each field of the fiskaly Unified API (UAPI) v6 e-invoicing payload ends up in five XML e-invoice formats. Each format has its own page, built like [`request2gobl.md`](https://github.com/fiskaly/meta/blob/master/doc/gobl/request2gobl.md) with an extra column for the EN 16931 business term (BT/BG).
 
@@ -30,12 +30,15 @@ All of these were confirmed by independent checks against code and primary sourc
 | Finding | Affects | Effect |
 | --- | --- | --- |
 | `VAT_REVERSE_CHARGE` lines, and `MEAL_VOUCHER` / `DEPOSIT` payments, are rejected by the GOBL mapping | all | no reverse-charge (AE) invoices at all |
-| The supplier's VAT ID always beats `tax_id_number`, so BT-32 (and the BE KBO/BCE number) is never emitted. UAPI has no Steuernummer field | XRechnung, ZUGFeRD, BIS | a DE taxpayer without a USt-IdNr cannot send; without a VAT ID, the Steuer-ID is sent as BT-31 and fails GOBL |
+| The supplier's VAT ID always beats `tax_id_number`, so BT-32 (and the BE KBO/BCE number) is never emitted. The DE `tax_id_number` is the personal Steuer-ID, not the Steuernummer § 14 Abs. 4 Nr. 2 UStG means | XRechnung, ZUGFeRD, BIS | a DE taxpayer without a USt-IdNr cannot send; without a VAT ID, the Steuer-ID is sent as BT-31 and fails GOBL. Target: NEW `fiscalization.tax_number` (BT-32), NEW `seller.identifier` (BT-29) and a DE Handelsregister ID (BT-30) for BR-CO-26 |
 | `NOT_SUBJECT` → VAT category `O` while BT-31/BT-48 are still sent | XRechnung, ZUGFeRD, BIS 3 | fails BR-O-02. Not caught at sync, so it surfaces in Invopop's validation step after the record is `COMPLETED` (code reading, not executed). Does not carry over to BIS 4: BR-O-02 is not in the XRechnung 4.0 Vorversion |
 | `buyer_id` and `company_id` are both emitted as buyer identifiers; `company_id` never reaches BT-47 | XRechnung, ZUGFeRD, BIS | fails UBL-SR-16 / FX-SCH-A-000163 when both are set |
-| `operation_date` becomes BT-72 (delivery date), never BT-7 | XRechnung, ZUGFeRD, BIS | tax point date is never expressed |
+| `operation_date` becomes BT-72 (delivery date), never BT-7; `shipping.date` is ignored; BT-72 defaults to the issue date | XRechnung, ZUGFeRD, BIS | target: `operation_date` → BT-7, `shipping.date` → BT-72, no issue-date default. DE: `operation_date` is also copied to BT-72 when no `shipping.date` or period is given (BR-FX-EN-04, BR-DE-TMP-32) |
 | Fields the API docs tag with a BT are dropped: BT-22 `document.text`, `product.*`, `unit.factor`, GROUP `items[]`, and more | all | silent data loss |
 | A correction is always a credit note (381 / TD04) with unnegated amounts; BG-3 is read back from Invopop | all | no upward correction (debit note, 384, TD05); an upward correction sent this way passes validation and credits the buyer |
+| Line price, discount and surcharge are read from the VAT-inclusive fields although BT-146, BT-136 and BT-141 are net amounts | all | target: the `.exclusive` fields; BT-131 from `value.base.exclusive` |
+| BT-5 comes from the first payment's currency, which is the payment currency, not the invoice currency | all | target: NEW `document.invoice_currency`; BT-6/BT-111 (NEW `totals.vat.amount_accounting`) once non-EUR is enabled |
+| Many BTs have no UAPI input at all (tax representative address, invoicing period, buyer trade name and contact, line periods and references, allowances and charges, attachments, ...) | all | 62 to 84 `NEW field needed` rows per page, indexed in §5 of each page |
 | `invoicing.format` is kept only for a DE recipient address | XRechnung, ZUGFeRD | a DE supplier's `XRECHNUNG_V3` e-mail to a BE recipient silently becomes ZUGFeRD, contrary to the API docs |
 | A sync failure returns 2xx and leaves the record `COMPLETED` with an error log; Invopop invoice faults are logged raw, untranslated | XRechnung, ZUGFeRD, BIS | the client sees success; nothing is sent. IT records instead stay `ACCEPTED` until the SdI webhook |
 | What Invopop's "PPL" numbering step in the Peppol workflows does to BT-1 | BIS 3, XRechnung via Peppol | UNVERIFIED; check a sandbox silo entry or ask Invopop |
@@ -56,6 +59,8 @@ Each page has two layers:
 **Columns:** `UAPI | EN 16931 BT | <format element> | notes`. Calculated rows add a formula column.
 
 **Notes vocabulary:** *ignored*: the UAPI field exists but nothing is written. *fixed*: constant value. *default*: used when the UAPI field is empty. *derived*: computed from other fields. *gap*: the format requires or supports the element but UAPI has no source. *UNVERIFIED*: the claim could not be confirmed against a primary source. A direct mapping carries no tag.
+
+**NEW field needed:** in the UAPI column, a field fiskaly must add because the BT needs an input UAPI does not have, or the existing field means something else. Today's source, if any, follows in brackets. The notes of a NEW row start with why it is needed: *law* (with the article), *format-mandatory*, *conditional* (with the business rule) or *optional*. §5 of each page indexes its NEW fields. Code tables (fiskaly VAT codes → VAT category, VATEX, Natura, reason texts) are maintained outside these pages.
 
 ## Sources and version pins
 
